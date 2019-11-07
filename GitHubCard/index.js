@@ -43,6 +43,7 @@
 
 // list of users to display
 const githubUsers = ['notesong', 'tetondan', 'dustinmyers', 'justsml', 'luishrd', 'bigknell'];
+const followersList = [];
 
 function userInfoCard(userInfoObj) {
   // check for null entries
@@ -109,17 +110,50 @@ function userInfoCard(userInfoObj) {
   return card;
 }
 
+// create a card using response from server and userInfoCard()
+function createCard(response) {
+  const userObject = response.data;
+  const newCard = userInfoCard(userObject);
+  entryPoint.appendChild(newCard);
+}
+
 const entryPoint = document.querySelector('.cards');
 
+// create cards from hard-coded array
 githubUsers.forEach(user => {
   axios
     .get('https://api.github.com/users/' + user)
     .then(response => {
-      const userObject = response.data;
-      const newCard = userInfoCard(userObject);
-      entryPoint.appendChild(newCard);
+      createCard(response);
     })
     .catch(error => {
       console.log('The data was not returned.', error);
     });
-}); 
+});
+
+// create followers cards for stretch goal
+axios
+  // get followers and push their address into followersList array
+  .get('https://api.github.com/users/Notesong/followers')
+  .then(response => {
+    const followersObject = response.data;
+    for(let i = 0 ; i < followersObject.length ; i++) {
+      followersList.push(followersObject[i].url);
+    }
+  })
+  // create card for each follower by looping through followersList
+  .then(() => {
+    followersList.forEach(follower => {
+    axios
+      .get(follower)
+      .then(response => {
+        createCard(response);
+      })
+      .catch(error => {
+        console.log('The data was not returned.', error);
+      });  
+    });
+  })
+  .catch(error => {
+    console.log('The data was not returned.', error);
+  });

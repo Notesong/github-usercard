@@ -7,12 +7,12 @@
 // console.log(axiosPromises);
 
 /* 
-Step 2: Inspect and study the data coming back, this is YOUR 
-   github info! You will need to understand the structure of this 
-   data in order to use it to build your component function 
+  Step 2: Inspect and study the data coming back, this is YOUR 
+    github info! You will need to understand the structure of this 
+    data in order to use it to build your component function 
 
   Step 3: Create a function that accepts a single object as its only argument,
-  Using DOM methods and properties, create a component that will return the following DOM element:
+    Using DOM methods and properties, create a component that will return the following DOM element:
 
 <div class="card">
   <img src={image url of user} />
@@ -41,44 +41,21 @@ Step 2: Inspect and study the data coming back, this is YOUR
           user, and adding that card to the DOM.
 */
 
-// example data pulled from server
-const githubUserData = { 
-  avatar_url: "https://avatars3.githubusercontent.com/u/5239836?v=4",
-  ​​​bio: null,
-  ​​​blog: "",
-  ​​​company: null,
-  ​​​created_at: "2013-08-15T19:52:39Z",
-  ​​​email: null,
-  ​​​events_url: "https://api.github.com/users/Notesong/events{/privacy}",
-  ​​​followers: 2,
-  ​​​followers_url: "https://api.github.com/users/Notesong/followers",
-  ​​​following: 6,
-  ​​​following_url: "https://api.github.com/users/Notesong/following{/other_user}",
-  ​​​gists_url: "https://api.github.com/users/Notesong/gists{/gist_id}",
-  ​​​gravatar_id: "",
-  ​​​hireable: null,
-  ​​​html_url: "https://github.com/Notesong",
-  ​​​id: 5239836,
-  ​​​location: null,
-  ​​​login: "Notesong",
-  ​​​name: null,
-  ​​​node_id: "MDQ6VXNlcjUyMzk4MzY=",
-  ​​​organizations_url: "https://api.github.com/users/Notesong/orgs",
-  ​​​public_gists: 0,
-  ​​​public_repos: 27,
-  ​​​received_events_url: "https://api.github.com/users/Notesong/received_events",
-  ​​​repos_url: "https://api.github.com/users/Notesong/repos",
-  ​​​site_admin: false,
-  ​​​starred_url: "https://api.github.com/users/Notesong/starred{/owner}{/repo}",
-  ​​​subscriptions_url: "https://api.github.com/users/Notesong/subscriptions",
-  ​​​type: "User",
-  ​​​updated_at: "2019-11-04T15:42:15Z",
-  ​​​url: "https://api.github.com/users/Notesong",
-};
 // list of users to display
-const followersArray = ['notesong', 'tetondan', 'dustinmyers', 'justsml', 'luishrd', 'bigknell'];
+const githubUsers = ['notesong', 'tetondan', 'dustinmyers', 'justsml', 'luishrd', 'bigknell'];
 
 function userInfoCard(userInfoObj) {
+  // check for null entries
+  if (userInfoObj.name === null) {
+    userInfoObj.name = userInfoObj.login;
+  }
+  if (userInfoObj.location === null) {
+    userInfoObj.location = '';
+  }
+  if (userInfoObj.bio === null) {
+    userInfoObj.bio = '';
+  }
+
   // create elements
   const card = document.createElement('div');
   const userImg = document.createElement('img');
@@ -90,19 +67,38 @@ function userInfoCard(userInfoObj) {
   const githubLink = document.createElement('a');
   const followers = document.createElement('p');
   const following = document.createElement('p');
-  const bio = document.createElement('p');
+  const userBio = document.createElement('p');
 
-  // append elements
+  // append and add content to elements
   card.appendChild(userImg);
+  userImg.src = userInfoObj.avatar_url;
+
   card.appendChild(cardInfo);
+
   cardInfo.appendChild(name);
+  name.textContent = userInfoObj.name;
+
   cardInfo.appendChild(username);
+  username.textContent = userInfoObj.login;
+
   cardInfo.appendChild(location);
+  location.textContent = 'Location: ' + userInfoObj.location;
+
   cardInfo.appendChild(profile);
+  profile.textContent = 'Profile: ';
+
   profile.appendChild(githubLink);
+  githubLink.textContent = userInfoObj.html_url;
+  githubLink.href = userInfoObj.html_url;
+
   cardInfo.appendChild(followers);
+  followers.textContent = 'Followers: ' + userInfoObj.followers;
+
   cardInfo.appendChild(following);
-  cardInfo.appendChild(bio);
+  following.textContent = 'Following: ' + userInfoObj.following;
+  
+  cardInfo.appendChild(userBio);
+  userBio.textContent = 'Bio: ' + userInfoObj.bio;
 
   // add classes to elements
   card.classList.add('card');
@@ -110,32 +106,20 @@ function userInfoCard(userInfoObj) {
   name.classList.add('name')
   username.classList.add('username');
 
-  // add content to elements
-  userImg.src = userInfoObj.avatar_url;
-  name.textContent = userInfoObj.name;
-  username.textContent = userInfoObj.login;
-  location.textContent = userInfoObj.location;
-  githubLink.textContent = userInfoObj.html_url;
-  githubLink.href = userInfoObj.html_url;
-  followers.textContent = userInfoObj.followers;
-  following.textContent = userInfoObj.following;
-
   return card;
 }
 
-function getGithubData(name) {
+const entryPoint = document.querySelector('.cards');
+
+githubUsers.forEach(user => {
   axios
-    .get(`https://api.github.com/users/${name}`)
+    .get('https://api.github.com/users/' + user)
     .then(response => {
-      return response;
-    })
-    .try(value => {
-      return value;
+      const userObject = response.data;
+      const newCard = userInfoCard(userObject);
+      entryPoint.appendChild(newCard);
     })
     .catch(error => {
-      console.log('The data was not returned.', error)
-    })
-    return userDataObj;
-}
-
-const entryPoint = document.querySelector('.cards');
+      console.log('The data was not returned.', error);
+    });
+}); 
